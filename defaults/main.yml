@@ -1,0 +1,24 @@
+---
+# defaults file for ontap_cluster_setup
+https_global: true
+validate_certs_global: false
+license_codes:
+disks:
+motd:
+dns:
+ntp:
+snmp:
+aggrs:
+ports:
+ifgrps:
+vlans:
+bcasts:
+inters:
+cluster:
+cluster_name: temp
+autonegotiate: true
+flowcontrol: none
+distribution_function: ip
+ifgrp_mode: multimode_lacp
+bcast_ipspace: Default
+mtu: 9000

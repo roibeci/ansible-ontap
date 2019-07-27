@@ -1,0 +1,77 @@
+cluster: "Select1"
+hostname: "10.68.65.232"
+username: "admin"
+password: "netApp1!"
+https_global: "true"
+validate_certs_global: "false"
+
+hosts:
+ node1: "Select1-01"
+ node2: "Select1-02"
+
+license_codes: AAAAAAAAAAABB,AAAAAAAAAAABB,AAAAAAAAAAABB,AAAAAAAAAAABBBB
+
+motd: "Welcome to TZAYAD Elbit Storage System. This is a monitored system! "
+
+dns:
+  - { dns_domains: hci.local, dns_nameservers: 10.68.65.17 }
+
+ntp:
+  - { server_name: hci.local, version: auto }
+
+snmp:
+  - { community_name: ansible_snmp, access_control: ro }
+
+ports:
+  - { node: Select1-01, port: e0g, mtu: 9000 }
+  - { node: Select1-01, port: e0a, mtu: 9000 }
+  - { node: Select1-02, port: e0g, mtu: 9000 }
+  - { node: Select1-02, port: e0a, mtu: 9000 }
+
+ifgrps:
+  - { name: a0a, node: "Select1-01", ports: "e0a,e0b", mode: multimode, mtu: 9000 }
+  - { name: a0a, node: "Select1-02", ports: "e0a,e0b", mode: multimode, mtu: 9000 }
+
+vlans:
+  - { vlanid: 300, node: "Select1-02", phy_interface: "a0a" }
+  - { vlanid: 400, node: "Select1-02", phy_interface: "a0a" }
+  - { vlanid: 62, node: "Select1-02", phy_interface: "a0a" }
+  - { vlanid: 300, node: "Select1-01", phy_interface: "a0a" }
+  - { vlanid: 400, node: "Select1-01", phy_interface: "a0a" }
+  - { vlanid: 62, node: "Select1-01", phy_interface: "a0a" }
+
+bcasts:
+  - { name: vlan_400, ports: "Select1-01:a0a-400,Select1-02:a0a-400", mtu: 1500 }
+  - { name: vlan_300, ports: "Select1-01:a0a-300,Select1-02:a0a-300", mtu: 1500 }
+
+vserver:
+  - { name: SVM_Beci, root_volume_aggregate: data , root_volume_security_style: unix }
+
+lifs:
+  - { name: lif1, node: "{{ hosts['node1'] }}", port: a0a-400, address:1.1.1.1, netmask: 255.255.255.0, vserver:SVM_Beci }
+  - { name: lif2, node: "{{ hosts['node2'] }}", port: a0a-300, address:1.1.1.2, netmask: 255.255.255.0, vserver:SVM_Beci }
+
+gateway: #if a different default route/gateway then the clusters default needs to be added
+  - { vserver: SVM_Beci, destination: 0.0.0.0/0, gateway: 172.32.0.1 }
+
+cifs: # Vservers to join to an AD Domain
+  - { vserver: SVM_Beci, cifs_server_name: netapp1, domain: hci.local, force: true }
+
+volumes:
+  - { name: lif1, node: "{{ hosts['node1'] }}", port: a0a-400, address:1.1.1.1, netmask: 255.255.255.0, vserver:SVM_Beci }
+
+
+# interface1:
+#     name: "lif1"
+#     node: "{{ hosts['node1'] }}"
+#     port: "e0a"
+#     address: "1.1.1.1"
+#     netmask: "255.255.255.0"
+#     vserver: "{{ vserver['name'] }}"
+#   interface2:
+#     name: "lif2"
+#     node: "{{ hosts['node1'] }}"
+#     port: "e0a"
+#     address: "1.1.1.2"
+#     netmask: "255.255.255.0"
+#     vserver: "SVM_Beci"

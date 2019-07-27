@@ -1,0 +1,220 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Set Login Message
+      na_ontap_motd:
+        state: present
+        vserver: "{{ cluster }}"
+        message: "{{ motd }}"
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        #ontapi: "{{ ontap_facts.ontap_version }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      when: motd != None
+    
+    - name: Setup DNS
+      na_ontap_dns:
+        state: present
+        vserver: "{{ cluster }}"
+        domains: "{{ item.dns_domains }}"
+        nameservers: "{{ item.dns_nameservers }}"
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        #ontapi: "{{ ontap_facts.ontap_version }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      with_items:
+        "{{ dns }}"
+      when: dns != None
+    
+    - name: Set NTP Server
+      na_ontap_ntp:
+        state: present
+        server_name: "{{ item.server_name }}"
+        version: "{{ item.version }}"
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        #ontapi: "{{ ontap_facts.ontap_version }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      with_items:
+        "{{ ntp }}"
+      when: ntp != None
+    
+    - name: Create SNMP community
+      na_ontap_snmp:
+        community_name: "{{ item.community_name }}"
+        access_control: "{{ item.access_control }}"
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        #ontapi: "{{ ontap_facts.ontap_version }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      with_items:
+        "{{ snmp }}"
+      when: snmp != None
+    
+    - name: Remove Ports from Default Broadcast Domain
+      na_ontap_broadcast_domain_ports:
+        state: absent
+        broadcast_domain: "Default"
+        ports: "{{ item.node }}:{{ item.port }}"
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      with_items:
+        "{{ ports }}"
+      when: ports != None
+    
+    - name: Modify Net Port
+      na_ontap_net_port:
+        state: present
+        node: "{{ item.node }}"
+        port: "{{ item.port }}"
+    #    mtu: "{{ item.mtu }}"
+        autonegotiate_admin: "{{ autonegotiate }}"
+        flowcontrol_admin: "{{ flowcontrol }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ hostname }}"
+        #ontapi: "{{ ontap_facts.ontap_version }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      with_items:
+        "{{ ports }}"
+      when: ports != None
+    
+    - name: Create ifgrp
+      na_ontap_net_ifgrp:
+        state: present
+        distribution_function: "{{ distribution_function }}" #goes to default
+        mode: "{{ ifgrp_mode }}" #goes to default
+        name: "{{ item.name }}"
+        ports: "{{ item.ports }}"
+        node: "{{ item.node }}"
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      with_items:
+        "{{ ifgrps }}"
+      when: ifgrps != None
+    
+    - name: Modify Net Port ifgrp
+      na_ontap_net_port:
+        state: present
+        node: "{{ item.node }}"
+        port: "{{ item.name }}"
+        mtu: "{{ item.mtu }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ hostname }}"
+    #    ontapi: "{{ ontap_facts.ontap_version }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      with_items:
+        "{{ ifgrps }}"
+      when: ifgrps != None
+    
+    - name: Create VLAN
+      na_ontap_net_vlan:
+        state: present
+        vlanid: "{{ item.value.vlanid }}"
+        node: "{{ item.value.node }}"
+        parent_interface: "{{ item.value.phy_interface }}"
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      with_items:
+        "{{ vlans }}"
+      when: vlans != None
+    
+    - name: create broadcast domain
+      na_ontap_broadcast_domain:
+        state: present
+        broadcast_domain: "{{ item.name }}"
+        mtu: "{{ item.mtu }}"
+        ipspace: "{{ bcast_ipspace }}"
+        ports: "{{ item.ports }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        hostname: "{{ hostname }}"
+        #ontapi: "{{ ontap_facts.ontap_version }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      with_items:
+        "{{ bcasts }}"
+      when: bcasts != None
+    
+    - name: Create Vserver
+      na_ontap_svm:
+        state: present
+        name: "{{ item.name }}"
+        root_volume: "{{ item.name }}_root"
+        root_volume_aggregate: "{{ item.root_volume_aggregate }}"
+        root_volume_security_style: "{{ item.root_volume_security_style}}"
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      with_items:
+        "{{ vservers }}"
+      when: vservers != None
+    
+    - name: Create interfaces
+      na_ontap_interface:
+        state: present
+        interface_name: "{{ item.name }}"
+        home_port: "{{ item.port }}"
+        home_node: "{{ item.node }}"
+        role: data
+        protocols: cifs,nfs
+        admin_status: up
+        address: "{{ item.address }}"
+        netmask: "{{ item.netmask }}"
+        force_subnet_association: false
+        vserver: "{{ item.vserver }}"
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      with_items:
+        "{{ lifs }}"
+      when: lifs != None
+    
+    - name: Add Volumes
+      na_ontap_volume:
+        state: present
+        name: "{{ item.name }}"
+        junction_path: "/{{ item.name }}"
+        is_infinite: False
+        aggregate_name: "{{ item.aggr }}"
+        size: "{{ item.size }}"
+        size_unit: gb
+        space_guarantee: none
+        policy: "{{ item.policy }}"
+        percent_snapshot_space: "{{ item.snappercent }}"
+        vserver: "{{ item.vserver }}"
+        volume_security_style: "{{ item.secustyle }}"
+        wait_for_completion: True
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      with_items:
+        "{{ volumes }}"
+      when: volumes != None
+ 
