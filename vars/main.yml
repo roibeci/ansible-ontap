@@ -48,8 +48,8 @@ vserver:
   - { name: SVM_Beci, root_volume_aggregate: data , root_volume_security_style: unix }
 
 lifs:
-  - { name: lif1, node: "{{ hosts['node1'] }}", port: a0a-400, address:1.1.1.1, netmask: 255.255.255.0, vserver:SVM_Beci }
-  - { name: lif2, node: "{{ hosts['node2'] }}", port: a0a-300, address:1.1.1.2, netmask: 255.255.255.0, vserver:SVM_Beci }
+  - { name: lif1, node: "{{ hosts['node1'] }}", port: a0a-400, address: 1.1.1.1, netmask: 255.255.255.0, vserver:SVM_Beci }
+  - { name: lif2, node: "{{ hosts['node2'] }}", port: a0a-300, address: 1.1.1.2, netmask: 255.255.255.0, vserver:SVM_Beci }
 
 gateway: #if a different default route/gateway then the clusters default needs to be added
   - { vserver: SVM_Beci, destination: 0.0.0.0/0, gateway: 172.32.0.1 }
