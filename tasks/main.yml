@@ -1,6 +1,28 @@
 ---
 - hosts: localhost
   tasks:
+    - name: Create Cluster
+    na_ontap_cluster:
+      state: present
+      cluster_name: new_cluster
+      hostname: "{{ node1['ip'] }}"
+      username: "admin"
+      password: ""
+    - name: Add Base License
+      na_ontap_cluster:
+        state: present
+        cluster_name: "{{ cluster }}"
+        license_code: "{{ base_license }}"
+        hostname: "{{ netapp_hostname }}"
+        username: "{{ netapp_username }}"
+        password: "{{ netapp_password }}"
+    - name: Join Cluster
+      na_ontap_cluster:
+        state: present
+        cluster_ip_address: "{{ hostname }}"
+        hostname: "{{ node2['ip'] }}"
+        username: "admin"
+        password: ""
     - name: Set Login Message
       na_ontap_motd:
         state: present
@@ -13,7 +35,18 @@
         https: "{{ https_global }}"
         validate_certs: "{{ validate_certs_global }}"
       when: motd != None
-
+    - name: Assign Disks
+      na_ontap_disks:
+        node: "{{ item }}"
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        #ontapi: "{{ ontap_facts.ontap_version }}"
+        https: true
+        validate_certs: false
+      with_items:
+        "{{ disks }}"
+      when: disks != None
     - name: Setup DNS
       na_ontap_dns:
         state: present
@@ -127,9 +160,9 @@
     - name: Create VLAN
       na_ontap_net_vlan:
         state: present
-        vlanid: "{{ item.value.vlanid }}"
-        node: "{{ item.value.node }}"
-        parent_interface: "{{ item.value.phy_interface }}"
+        vlanid: "{{ item.vlanid }}"
+        node: "{{ item.node }}"
+        parent_interface: "{{ item.phy_interface }}"
         hostname: "{{ hostname }}"
         username: "{{ username }}"
         password: "{{ password }}"
@@ -207,7 +240,7 @@
         policy: "{{ item.policy }}"
         percent_snapshot_space: "{{ item.snappercent }}"
         vserver: "{{ item.vserver }}"
-        volume_security_style: "{{ item.secustyle }}"
+        volume_security_style: "{{ item.securitystyle }}"
         wait_for_completion: True
         hostname: "{{ hostname }}"
         username: "{{ username }}"
