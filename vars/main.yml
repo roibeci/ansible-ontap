@@ -1,15 +1,15 @@
 base_license: AAAAAAAAAAAAAAAAA 
 cluster: "Select1"
-hostname: "10.68.65.232"
+hostname: "10.68.65.210"
 username: "admin"
-password: "netApp1!"
+password: "netapp123"
 https_global: "true"
 validate_certs_global: "false"
 
 node1: 
-  - { name: "Select1-01", ip: 10.68.65.120 }
+  - { name: "Select1-01", ip: 10.68.65.211 }
 node2:
-  - { name: "Select1-02", ip: 10.68.65.121 }
+  - { name: "Select1-02", ip: 10.68.65.212 }
 
 license_codes: AAAAAAAAAAABB,AAAAAAAAAAABB,AAAAAAAAAAABB,AAAAAAAAAAABBBB
 
@@ -31,8 +31,8 @@ ports:
   - { node: Select1-02, port: e0a, mtu: 9000 }
 
 ifgrps:
-  - { name: a0a, node: "Select1-01", ports: "e0a,e0b", mode: multimode, mtu: 9000 }
-  - { name: a0a, node: "Select1-02", ports: "e0a,e0b", mode: multimode, mtu: 9000 }
+  - { name: a0a, node: "Select1-01", ports: "e0a,e0g", mode: multimode, mtu: 9000 }
+  - { name: a0a, node: "Select1-02", ports: "e0a,e0g", mode: multimode, mtu: 9000 }
 
 vlans:
   - { vlanid: 300, node: "Select1-02", phy_interface: "a0a" }
@@ -59,6 +59,10 @@ gateway: #if a different default route/gateway then the clusters default needs t
 cifs: # Vservers to join to an AD Domain
   - { vserver: SVM_Beci, cifs_server_name: netapp1, domain: hci.local, force: true }
 
+exportrules:
+  - { client_match: 10.68.65.0/24, vserver: SVM_Beci }
+  - { client_match: 1.1.1.0/24, vserver: SVM_Beci }
+  
 volumes:
   - { name: lif1, node: "{{ hosts['node1'] }}", port: a0a-400, address: 1.1.1.1, netmask: 255.255.255.0, vserver: SVM_Beci }
 

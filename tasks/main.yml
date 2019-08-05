@@ -1,28 +1,28 @@
 ---
 - hosts: localhost
   tasks:
-    - name: Create Cluster
-    na_ontap_cluster:
-      state: present
-      cluster_name: new_cluster
-      hostname: "{{ node1['ip'] }}"
-      username: "admin"
-      password: ""
-    - name: Add Base License
-      na_ontap_cluster:
-        state: present
-        cluster_name: "{{ cluster }}"
-        license_code: "{{ base_license }}"
-        hostname: "{{ netapp_hostname }}"
-        username: "{{ netapp_username }}"
-        password: "{{ netapp_password }}"
-    - name: Join Cluster
-      na_ontap_cluster:
-        state: present
-        cluster_ip_address: "{{ hostname }}"
-        hostname: "{{ node2['ip'] }}"
-        username: "admin"
-        password: ""
+    # - name: Create Cluster
+    # na_ontap_cluster:
+    #   state: present
+    #   cluster_name: new_cluster
+    #   hostname: "{{ node1['ip'] }}"
+    #   username: "admin"
+    #   password: ""
+    # - name: Add Base License
+    #   na_ontap_cluster:
+    #     state: present
+    #     cluster_name: "{{ cluster }}"
+    #     license_code: "{{ base_license }}"
+    #     hostname: "{{ netapp_hostname }}"
+    #     username: "{{ netapp_username }}"
+    #     password: "{{ netapp_password }}"
+    # - name: Join Cluster
+    #   na_ontap_cluster:
+    #     state: present
+    #     cluster_ip_address: "{{ hostname }}"
+    #     hostname: "{{ node2['ip'] }}"
+    #     username: "admin"
+    #     password: ""
     - name: Set Login Message
       na_ontap_motd:
         state: present
@@ -226,6 +226,26 @@
       with_items:
         "{{ lifs }}"
       when: lifs != None
+
+    - name: Create Export Policy Rules
+      na_ontap_export_policy_rule:
+        state: present
+        allow_suid: true
+        client_match: "{{ item.client_match }}"
+        policy_name: "default"
+        protocol: "nfs"
+        ro_rule: "any"
+        rw_rule: "any"
+        super_user_security: "any"
+        vserver: "{{ item.vserver }}"
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        https: "{{ https_global }}"
+        validate_certs: "{{ validate_certs_global }}"
+      with_items:
+        "{{ exportrules }}"
+      when: exportrules != None
 
     - name: Add Volumes
       na_ontap_volume:
