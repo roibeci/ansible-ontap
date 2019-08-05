@@ -1,16 +1,19 @@
 base_license: AAAAAAAAAAAAAAAAA 
-cluster: "Select1"
+cluster: "Buci"
 hostname: "10.68.65.210"
 username: "admin"
 password: "netapp123"
 https_global: "true"
 validate_certs_global: "false"
 
-node1: 
-  - { name: "Select1-01", ip: 10.68.65.211 }
-node2:
-  - { name: "Select1-02", ip: 10.68.65.212 }
-
+hosts:
+  node1:
+    name: "Buci-01" 
+    ip: "10.68.65.211"
+  node2: 
+    name: "Buci-02" 
+    ip: "10.68.65.212"
+    
 license_codes: AAAAAAAAAAABB,AAAAAAAAAAABB,AAAAAAAAAAABB,AAAAAAAAAAABBBB
 
 motd: "Welcome to TZAYAD Elbit Storage System. This is a monitored system! "
@@ -25,26 +28,26 @@ snmp:
   - { community_name: ansible_snmp, access_control: ro }
 
 ports:
-  - { node: Select1-01, port: e0g, mtu: 9000 }
-  - { node: Select1-01, port: e0a, mtu: 9000 }
-  - { node: Select1-02, port: e0g, mtu: 9000 }
-  - { node: Select1-02, port: e0a, mtu: 9000 }
+  - { node: Buci-01, port: e0g, mtu: 9000 }
+  - { node: Buci-01, port: e0a, mtu: 9000 }
+  - { node: Buci-02, port: e0g, mtu: 9000 }
+  - { node: Buci-02, port: e0a, mtu: 9000 }
 
 ifgrps:
-  - { name: a0a, node: "Select1-01", ports: "e0a,e0g", mode: multimode, mtu: 9000 }
-  - { name: a0a, node: "Select1-02", ports: "e0a,e0g", mode: multimode, mtu: 9000 }
+  - { name: a0a, node: "Buci-01", ports: "e0a,e0g", mode: multimode, mtu: 9000 }
+  - { name: a0a, node: "Buci-02", ports: "e0a,e0g", mode: multimode, mtu: 9000 }
 
 vlans:
-  - { vlanid: 300, node: "Select1-02", phy_interface: "a0a" }
-  - { vlanid: 400, node: "Select1-02", phy_interface: "a0a" }
-  - { vlanid: 62, node: "Select1-02", phy_interface: "a0a" }
-  - { vlanid: 300, node: "Select1-01", phy_interface: "a0a" }
-  - { vlanid: 400, node: "Select1-01", phy_interface: "a0a" }
-  - { vlanid: 62, node: "Select1-01", phy_interface: "a0a" }
+  - { vlanid: 300, node: "Buci-02", phy_interface: "a0a" }
+  - { vlanid: 400, node: "Buci-02", phy_interface: "a0a" }
+  - { vlanid: 62, node: "Buci-02", phy_interface: "a0a" }
+  - { vlanid: 300, node: "Buci-01", phy_interface: "a0a" }
+  - { vlanid: 400, node: "Buci-01", phy_interface: "a0a" }
+  - { vlanid: 62, node: "Buci-01", phy_interface: "a0a" }
 
 bcasts:
-  - { name: vlan_400, ports: "Select1-01:a0a-400,Select1-02:a0a-400", mtu: 1500 }
-  - { name: vlan_300, ports: "Select1-01:a0a-300,Select1-02:a0a-300", mtu: 1500 }
+  - { name: vlan_400, ports: "Buci-01:a0a-400,Buci-02:a0a-400", mtu: 1500 }
+  - { name: vlan_300, ports: "Buci-01:a0a-300,Buci-02:a0a-300", mtu: 1500 }
 
 vservers:
   - { name: SVM_Beci, root_volume_aggregate: data , root_volume_security_style: unix }

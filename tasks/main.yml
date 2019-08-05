@@ -35,18 +35,36 @@
         https: "{{ https_global }}"
         validate_certs: "{{ validate_certs_global }}"
       when: motd != None
-    - name: Assign Disks
-      na_ontap_disks:
-        node: "{{ item }}"
+      
+    - name: Remove Disk Partition Ownership from Node02 #NEED TO FIX ASTERISK * SIGN
+      na_ontap_command:
         hostname: "{{ hostname }}"
         username: "{{ username }}"
         password: "{{ password }}"
-        #ontapi: "{{ ontap_facts.ontap_version }}"
-        https: true
-        validate_certs: false
-      with_items:
-        "{{ disks }}"
-      when: disks != None
+        #command: ['set', 'd', '-c', 'off', ';', 'disk', 'option', 'modify', '-node', '*', '-autoassign', 'off', ';', 'disk', 'partition', 'removeowner', '{-partition', '*P1', '-container-type', 'spare', '-owner-node-name', '*2}']
+        command: ['set', 'd', '-c', 'off', ';', 'disk', 'removeowner', '{-pool', 'Pool0', '-container-type', 'spare', '-owner', '*}']
+        validate_certs: "{{ validate_certs_global }}"
+        https: "{{ https_global }}"
+
+    - name: Assign Disk Partition Ownership to Node01
+      na_ontap_command:
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        #command: ['set', 'd', '-c', 'off', ';', 'disk', 'partition', 'assign', '{-container-type', 'unassigned', '}', '-owner', "{{ hosts['node1'].name }}"]
+        command: ['set', 'd', '-c', 'off', ';', 'disk', 'assign', '-all', 'true', '-node', "{{ hosts['node1'].name }}", '-pool', '0', '-force']
+        validate_certs: "{{ validate_certs_global }}"
+        https: "{{ https_global }}"
+
+    - name: Zero Spares and Enable Auto-Assign #NEED TO FIX ASTERISK * SIGN
+      na_ontap_command:
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        command: ['set', 'd', '-c', 'off', ';', 'disk', 'zerospares', '-use-physical-zeroing', 'false', ';', 'disk', 'option', 'modify', '-node', '*', '-autoassign', 'on']
+        validate_certs: "{{ validate_certs_global }}"
+        https: "{{ https_global }}"
+        
     - name: Setup DNS
       na_ontap_dns:
         state: present
